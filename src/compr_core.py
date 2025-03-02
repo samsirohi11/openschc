@@ -199,8 +199,8 @@ class Compressor:
         # set ruleID first.
         if rule[T_RULEID] is not None and rule[T_RULEIDLENGTH] is not None:
             output_bbuf.add_bits(rule[T_RULEID], rule[T_RULEIDLENGTH])
-            #dprint("rule {}/{}".format(rule[T_RULEID], rule[T_RULEIDLENGTH]))
-            #output_bbuf.display(format="bin")
+            dprint("rule {}/{}".format(rule[T_RULEID], rule[T_RULEIDLENGTH]))
+            output_bbuf.display(format="bin")
 
         for r in rule["Compression"]:
             #print("rule item:", r)

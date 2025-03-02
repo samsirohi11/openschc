@@ -308,6 +308,13 @@ FIELD__DEFAULT_PROPERTY = {
     T_UDP_APP_PORT         : {"FL": 16, "TYPE": int, "ALGO": "DIRECT"   },
     T_UDP_LEN              : {"FL": 16, "TYPE": int, "ALGO": "DIRECT"   },
     T_UDP_CKSUM            : {"FL": 16, "TYPE": int, "ALGO": "DIRECT"   },
+    T_QUIC_HEADER_FORM     : {"FL": 8, "TYPE": int, "ALGO": "DIRECT"},
+    T_QUIC_HEADER_TYPE     : {"FL": 1, "TYPE": int, "ALGO": "DIRECT"},
+    T_QUIC_VERSION         : {"FL": 32, "TYPE": int, "ALGO": "DIRECT"},
+    T_QUIC_DCID_LEN        : {"FL": 8, "TYPE": int, "ALGO": "DIRECT"},
+    T_QUIC_DCID            : {"FL": "var", "TYPE": bytes, "ALGO": "DIRECT"},
+    T_QUIC_SCID_LEN        : {"FL": 8, "TYPE": int, "ALGO": "DIRECT"},
+    T_QUIC_SCID            : {"FL": "var", "TYPE": bytes, "ALGO": "DIRECT"},
     T_ICMPV6_TYPE          : {"FL": 8,  "TYPE": int, "ALGO": "DIRECT"  },
     T_ICMPV6_CODE          : {"FL": 8,  "TYPE": int, "ALGO": "DIRECT"  },
     T_ICMPV6_CKSUM         : {"FL": 16, "TYPE": int, "ALGO": "DIRECT"  },
@@ -1618,7 +1625,7 @@ Some conversion capabilities may not works. see http://github.com/ltn22/pyang"""
 
                 if s+delta in self.sid_key_mapping: # A list we have keys, look for specific entry
                     # Raise an err if the number of SID keys are not the same as the number of keys in self.sid_key_mapping
-                    if len(self.sid_key_mapping[s+delta]) > len(keys):
+                    if len(self.sid_key_mapping[s+delta]) != len(keys):
                         raise ValueError ("Not enough keys values to locate the SID")
 
                     key_search = {}

@@ -56,8 +56,9 @@ class Parser:
         self.protocol = protocol
         self.header_fields = {}
 
-    def parse(self, pkt, direction, layers=["IPv6", "ICMP", "UDP", "CoAP"], 
+    def parse(self, pkt, direction, layers=["IPv6", "ICMP", "UDP", "CoAP","QUIC"], 
               coap_port = 5683,
+	          quic_port = 443,
               start="IPv6"):
         """
         Parsing a byte array:
@@ -136,8 +137,50 @@ class Parser:
 
             pos += 8
 
-            if udpBytes[0] == coap_port or udpBytes[1] == coap_port:
+            if udpBytes[0] == quic_port or udpBytes[1] == quic_port:
+                next_layer = "QUIC"
+            elif udpBytes[0] == coap_port or udpBytes[1] == coap_port:
                 next_layer = "CoAP"
+
+        if "QUIC" in layers and next_layer == "QUIC":
+            # RFC 8999 QUIC Header parsing (simplified)
+            first_byte = pkt[pos]
+            header_type = (first_byte & 0x80) >> 7  # 1=long header, 0=short header
+
+            if header_type == 1:
+                # Long Header
+                self.header_fields[T_QUIC_HEADER_TYPE, 1] = [adapt_value(header_type), 1]
+                self.header_fields[T_QUIC_HEADER_FORM, 1] = [adapt_value(first_byte), 8]
+                pos += 1
+                # parse version
+                version = int.from_bytes(pkt[pos:pos+4], byteorder="big")
+                self.header_fields[T_QUIC_VERSION, 1] = [adapt_value(version), 32]
+                pos += 4
+                # parse DCID length
+                dcid_len = int(pkt[pos])
+                pos += 1
+                self.header_fields[T_QUIC_DCID_LEN, 1] = [adapt_value(dcid_len), 8]
+                # parse DCID
+                dcid = pkt[pos:pos+dcid_len]
+                pos += dcid_len
+                self.header_fields[T_QUIC_DCID, 1] = [adapt_value(dcid), dcid_len*8]
+                # parse SCID length
+                scid_len = int(pkt[pos])
+                pos += 1
+                self.header_fields[T_QUIC_SCID_LEN, 1] = [adapt_value(scid_len), 8]
+                # parse SCID
+                scid = pkt[pos:pos+scid_len]
+                pos += scid_len
+                self.header_fields[T_QUIC_SCID, 1] = [adapt_value(scid), scid_len*8]
+                # parse length, packet number, etc. as needed...
+            elif header_type == 0:
+                # Short Header
+                    self.header_fields[T_QUIC_HEADER_TYPE, 1] = [adapt_value(header_type), 1]
+                    self.header_fields[T_QUIC_HEADER_FORM, 1] = [adapt_value(first_byte), 8]
+                    pos += 1
+
+ 
+                        
 
         if "ICMP" in layers and next_layer == "ICMP":
             icmpBytes = unpack('!BBH', pkt[pos:pos+4])
@@ -233,7 +276,6 @@ class Parser:
                 pos += 1
         return self.header_fields, pkt[pos:], None
 
-
 class Unparser:
 
     def _init(self):
@@ -247,6 +289,8 @@ class Unparser:
         L4header = None
         L7header = None
         coap_h   = None
+        quic_hdr   = None
+
 
         if (T_IPV6_VER, 1) in header_d: # doing IPv6 and UDP
 
@@ -322,6 +366,37 @@ class Unparser:
 #            else:
 #                raise ValueError("TBD")
 
+
+  
+            if (T_QUIC_HEADER_FORM, 1) in header_d:
+                # RFC 8999 QUIC Header construction (simplified)
+                quic_header_form = int.from_bytes(header_d[(T_QUIC_HEADER_FORM, 1)][0], "big")
+                quic_header_type = int.from_bytes(header_d[(T_QUIC_HEADER_TYPE, 1)][0], "big")
+
+                if quic_header_type == 1:
+                    # Long Header
+                    version = header_d[(T_QUIC_VERSION, 1)][0]
+                    if type(version) == bytes:
+                        version = int.from_bytes(version, 'big')
+                    dcid_len = int.from_bytes(header_d[(T_QUIC_DCID_LEN, 1)][0], "big")
+                    scid_len = int.from_bytes(header_d[(T_QUIC_SCID_LEN, 1)][0], "big")
+                    quic_hdr = struct.pack("!B", quic_header_form)
+                    quic_hdr += struct.pack("!I", version)
+                    quic_hdr += struct.pack("!B", dcid_len)
+                    quic_hdr += header_d[(T_QUIC_DCID, 1)][0]
+                    quic_hdr += struct.pack("!B", scid_len)
+                    quic_hdr += header_d[(T_QUIC_SCID, 1)][0]
+                    quic_hdr += data
+                    # add length, PN, etc. as needed
+                elif quic_header_type == 0:
+                    # Short Header
+                    quic_hdr = struct.pack("!B", quic_header_form)
+                    quic_hdr += data
+
+
+       
+
+
             if (T_COAP_VERSION, 1) in header_d: # IPv6 / UDP / COAP
                 #print ("CoAP Inside")
 
@@ -390,6 +465,8 @@ class Unparser:
 
         if coap_h != None:
             full_packet = L3header / L4header / Raw(load=coap_h)
+        elif quic_hdr != None:
+            full_packet = L3header / L4header / Raw(load=quic_hdr)
         elif L4header != None: 
             full_packet = L3header / L4header / Raw(load=data)
         else:

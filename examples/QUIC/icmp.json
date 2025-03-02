@@ -1,0 +1,84 @@
+ {
+    "DeviceID" : "udp:10.0.0.20:8888",
+    "SoR" : [  
+	 {
+	    "RuleID": 6,
+	    "RuleIDLength": 5,
+	    "Compression": [
+		{"FID": "IPV6.VER", "TV": 6, "MO": "equal", "CDA": "not-sent"},
+		{"FID": "IPV6.TC",  "TV": 1, "MO": "equal", "CDA": "not-sent"},
+		{"FID": "IPV6.FL",  "TV": 0, "MO": "ignore","CDA": "not-sent"},
+		{"FID": "IPV6.LEN",          "MO": "ignore","CDA": "compute-length"},
+		{"FID": "IPV6.NXT", "TV": 17, "MO": "equal", "CDA": "not-sent"},
+		{"FID": "IPV6.HOP_LMT", "TV" : 255,"MO": "ignore","CDA": "not-sent"},
+		{"FID": "IPV6.DEV_PREFIX","TV": "2001:0:0:2::/64", "MO": "equal", "CDA": "not-sent"},
+		{"FID": "IPV6.DEV_IID", "TV": "::14", "MO": "equal","CDA": "not-sent"},		
+		{"FID": "IPV6.APP_PREFIX", "TV": "2001:0:0:1::/64", "MO": "equal", "CDA": "not-sent"},
+		{"FID": "IPV6.APP_IID", "TV": "::15", "MO": "equal","CDA": "not-sent"},		
+		{"FID": "UDP.APP_PORT", "MO":"ignore", "CDA": "value-sent"},
+		{"FID": "UDP.DEV_PORT", "TV": 443, "MO":"equal", "CDA": "not-sent"},
+		{"FID": "UDP.CKSUM", "MO":"ignore", "CDA": "compute-checksum"},
+		{"FID": "UDP.LEN", "MO":"ignore", "CDA": "compute-length"},
+		{"FID": "QUIC.HEADER_FORM", "MO": "ignore", "CDA": "value-sent"},
+		{"FID": "QUIC.HEADER_TYPE", "TV": 1, "MO": "equal", "CDA": "not-sent"},
+		{"FID": "QUIC.VERSION", "TV": 1,"MO": "equal", "CDA": "not-sent"},
+		{"FID": "QUIC.DCID_LEN", "MO": "ignore", "CDA": "value-sent"},
+		{"FID": "QUIC.DCID", "MO": "ignore", "CDA": "value-sent"},
+		{"FID": "QUIC.SCID_LEN", "MO": "ignore", "CDA": "value-sent"},
+		{"FID": "QUIC.SCID", "MO": "ignore", "CDA": "value-sent"}
+		     ]
+	 }, 
+	 {
+	    "RuleID": 7,
+	    "RuleIDLength": 5,
+	    "Compression": [
+		{"FID": "IPV6.VER", "TV": 6, "MO": "equal", "CDA": "not-sent"},
+		{"FID": "IPV6.TC",  "TV": 1, "MO": "equal", "CDA": "not-sent"},
+		{"FID": "IPV6.FL",  "TV": 0, "MO": "ignore","CDA": "not-sent"},
+		{"FID": "IPV6.LEN",          "MO": "ignore","CDA": "compute-length"},
+		{"FID": "IPV6.NXT", "TV": 17, "MO": "equal", "CDA": "not-sent"},
+		{"FID": "IPV6.HOP_LMT", "TV" : 255,"MO": "ignore","CDA": "not-sent"},
+		{"FID": "IPV6.DEV_PREFIX","TV": "2001:0:0:2::/64", "MO": "equal", "CDA": "not-sent"},
+		{"FID": "IPV6.DEV_IID", "TV": "::14", "MO": "equal","CDA": "not-sent"},		
+		{"FID": "IPV6.APP_PREFIX", "TV": "2001:0:0:1::/64", "MO": "equal", "CDA": "not-sent"},
+		{"FID": "IPV6.APP_IID", "TV": "::15", "MO": "equal","CDA": "not-sent"},		
+		{"FID": "UDP.APP_PORT", "MO":"ignore", "CDA": "value-sent"},
+		{"FID": "UDP.DEV_PORT", "TV": 443, "MO":"equal", "CDA": "not-sent"},
+		{"FID": "UDP.CKSUM", "MO":"ignore", "CDA": "compute-checksum"},
+		{"FID": "UDP.LEN", "MO":"ignore", "CDA": "compute-length"},
+		{"FID": "QUIC.HEADER_FORM", "MO": "ignore", "CDA": "value-sent"},
+		{"FID": "QUIC.HEADER_TYPE", "TV": 0, "MO": "equal", "CDA": "not-sent"}
+		     ]
+	 }, 
+	{
+	 "RuleID": 8,
+	 "RuleIDLength": 5,
+	 "Fragmentation" : {
+            "FRMode": "AckOnError",
+            "FRDirection": "DW",
+            "FRModeProfile": {
+				"FCNSize": 3,
+				"tileSize": 9,
+				"lastTileInAll1": false,
+				"WSize": 156
+
+            }
+		}
+	},
+	{
+		"RuleID": 12,
+		"RuleIDLength": 5,
+		"Fragmentation": {
+			"FRMode": "AckOnError",
+            "FRDirection": "UP",
+            "FRModeProfile": {
+				"FCNSize": 3,
+				"tileSize": 9,
+				"lastTileInAll1": false,
+				"WSize": 156
+            }
+				 }
+	   }
+    	]
+  }
+
